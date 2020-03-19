@@ -71,11 +71,11 @@ public class InputController : MonoBehaviour
             MapField field = hit2D.transform.GetComponent<MapField>();
             if (isLongTouch)
             {
-                field.Action();
+                field.AlternativeAction();
             }
             else
             {
-                field.AlternativeAction();
+                field.Action();
             }
         }
     }
