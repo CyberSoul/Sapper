@@ -9,6 +9,17 @@ public class MapField : MonoBehaviour
     [SerializeField] GameObject m_earth;
     [SerializeField] FieldEllement m_ellement;
 
+    [SerializeField] bool m_isOpen = false;
+
+    public bool IsOpen
+    {
+        get { return m_isOpen; }
+    }
+    public bool IsEmpty
+    {
+        get { return m_ellement.GetFieldType() == FieldType.Empty; }
+    }
+
     public FieldEllement Ellement
     {
         get { return m_ellement; }
@@ -29,11 +40,12 @@ public class MapField : MonoBehaviour
     public void Action()
     {
         m_grass.SetActive( false );
-
+        m_isOpen = true;
     }
 
     public void AlternativeAction()
     {
+        m_flag.AlternativeAction();
         //  m_flag
         Debug.Log("AlternativeAction");
     }

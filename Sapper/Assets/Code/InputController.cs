@@ -12,6 +12,8 @@ public class InputController : MonoBehaviour
     float m_touchTimeStamp;
     int m_lastTouchCount = 0;
 
+    [SerializeField] bool m_isWin = false;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -21,61 +23,79 @@ public class InputController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.touchCount > 0)
+        if (m_isWin)
         {
-            if (!m_isTouched)
+            if (Input.GetMouseButtonDown(0))
             {
-                m_isTouched = true;
+                Debug.Log("Mouse click");
+                m_lastTouch = Input.mousePosition;
+                //m_isTouched = true;
                 m_touchTimeStamp = Time.unscaledTime;
             }
-            Touch touch = Input.GetTouch(0);
-            m_lastTouch = touch.position;
+            else if (Input.GetMouseButtonUp(0))
+            {
+                OnTouchEnd(m_lastTouch, false);
+            }
+
+            else if (Input.GetMouseButtonUp(1))
+            {
+                OnTouchEnd(Input.mousePosition, true);
+            }
         }
         else
         {
-            if (m_isTouched)
+            if (Input.touchCount > 0)
             {
-                OnTouchEnd();
-                m_isTouched = false;
+                if (!m_isTouched)
+                {
+                    m_isTouched = true;
+                    m_touchTimeStamp = Time.unscaledTime;
+                }
+                Touch touch = Input.GetTouch(0);
+                m_lastTouch = touch.position;
             }
+            else
+            {
+                if (m_isTouched)
+                {
+                    bool isLongTouch = (Time.unscaledTime - m_touchTimeStamp) > m_timeForLongTouch;
+                    OnTouchEnd(m_lastTouch, isLongTouch);
+                    m_isTouched = false;
+                }
 
-        }
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            Debug.Log("Mouse click");
-            m_lastTouch = Input.mousePosition;
-            //m_isTouched = true;
-            m_touchTimeStamp = Time.unscaledTime;
-        }
-        else if (Input.GetMouseButtonUp(0))
-        {
-            OnTouchEnd();
-        }
-
-        //For feature check fro multitouches.
-        if (m_lastTouchCount < Input.touchCount)
-        {
+            }
+            //For feature check fro multitouches.
+            if (m_lastTouchCount < Input.touchCount)
+            {
+            }
         }
 
     }
 
-    void OnTouchEnd()
+    void OnTouchEnd( Vector2 touchPos, bool a_isALternative )
     {
-        Debug.Log($"timeDiff = {Time.unscaledTime - m_touchTimeStamp}");
-        bool isLongTouch = (Time.unscaledTime - m_touchTimeStamp) > m_timeForLongTouch;
-        Debug.Log($"isLongTouch = {isLongTouch}");
-        RaycastHit2D hit2D = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(m_lastTouch), Vector2.zero);
+        //bool isLongTouch = (Time.unscaledTime - m_touchTimeStamp) > m_timeForLongTouch;
+        RaycastHit2D hit2D = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(touchPos), Vector2.zero);
         if (hit2D)
         {
             MapField field = hit2D.transform.GetComponent<MapField>();
-            if (isLongTouch)
+            if (a_isALternative)
             {
                 field.AlternativeAction();
             }
             else
             {
-                field.Action();
+                if (field.Ellement.IsMine)
+                {
+                    field.Action();
+                    Debug.Log("You lose");
+                    //m_map.CreateMap();
+                    return;
+                }
+                else
+                {
+                    m_map.UnlockFields(field);
+                }
             }
         }
     }

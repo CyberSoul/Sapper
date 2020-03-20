@@ -20,7 +20,7 @@ public class MapGenerator : MonoBehaviour
     [SerializeField] float m_heightOffset = 1.5f;
 
     MapField[,] m_fields;
-
+    
     public float WidthOffset
     {
         get { return m_widthOffset; }
@@ -50,6 +50,24 @@ public class MapGenerator : MonoBehaviour
     {
         m_initialData = a_mapConfig;
         CreateMap();
+    }
+
+    public void RecreateMap()
+    {
+        ClearMap();
+        CreateMap();
+    }
+
+    public void ClearMap()
+    {
+        for (int i = 0; i < m_initialData.m_width; ++i)
+        {
+            for (int j = 0; j < m_initialData.m_height; ++j)
+            {
+                Destroy(m_fields[i, j].gameObject);
+            }
+        }
+        //Array.Clear(m_fields,0, m_fields.Length);
     }
 
     public void CreateMap()
@@ -105,5 +123,43 @@ public class MapGenerator : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void UnlockFields(MapField a_field)
+    {
+        int x = Mathf.RoundToInt(a_field.transform.position.x / m_widthOffset);
+        int y = Mathf.RoundToInt(a_field.transform.position.y / m_heightOffset);
+
+        UnlockFields(x, y);
+    }
+
+    public void UnlockFields( int a_startedX, int a_startedY )
+    {
+        UnlockFieldsRecurs(a_startedX, a_startedY);
+    }
+
+    void UnlockFieldsRecurs(int a_x, int a_y )
+    {
+        if ( a_x < 0 || a_x >= m_initialData.m_width || a_y < 0 || a_y >= m_initialData.m_height )
+        {
+            return;
+        }
+
+        MapField checkedField = m_fields[a_x, a_y];
+        if (checkedField.IsOpen || checkedField.Ellement.IsMine)
+        {
+            return;
+        }
+
+        checkedField.Action();
+
+        if (checkedField.IsEmpty)
+        {
+            UnlockFieldsRecurs(a_x - 1, a_y);
+            UnlockFieldsRecurs(a_x + 1, a_y);
+            UnlockFieldsRecurs(a_x, a_y - 1);
+            UnlockFieldsRecurs(a_x, a_y + 1);
+        }
+
     }
 }
