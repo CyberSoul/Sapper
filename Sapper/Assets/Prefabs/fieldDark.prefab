@@ -25,7 +25,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1497865037816424898}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.64, y: 0.64, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 7778501239008638822}
@@ -133,6 +133,7 @@ MonoBehaviour:
   m_grass: {fileID: 1497865037816424898}
   m_earth: {fileID: 7697822738758309173}
   m_ellement: {fileID: 7851909447083991637}
+  m_isOpen: 0
 --- !u!61 &3568113510034848142
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -281,7 +282,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7697822738758309173}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.64, y: 0.64, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4534498758331398756}
@@ -352,12 +353,12 @@ PrefabInstance:
     - target: {fileID: 2141240436296256809, guid: e4d71fb285646374d9132025746bb978,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 0.64
       objectReference: {fileID: 0}
     - target: {fileID: 2141240436296256809, guid: e4d71fb285646374d9132025746bb978,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.64
       objectReference: {fileID: 0}
     - target: {fileID: 2141240436296256809, guid: e4d71fb285646374d9132025746bb978,
         type: 3}

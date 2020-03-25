@@ -125,6 +125,26 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
+    public void PositionateCamera()
+    {
+        Camera cam = Camera.main;
+        var pixelWidth = cam.pixelWidth;
+        var pixelHeight = cam.pixelHeight;
+
+        /*var pixlRect = cam.pixelRect;
+        pixlRect.width /= 2;
+        pixlRect.height /= 2;
+        cam.pixelRect = pixlRect;*/
+
+        // cam.pixelRect = new Rect(0,0, m_widthOffset*m_initialData.m_width, m_heightOffset*m_initialData.m_height);
+
+        cam.orthographicSize +=1;
+
+        Debug.Log($"pixelHeight = {cam.pixelHeight}, pixelWidth = {cam.pixelWidth}, scaledHeight = {cam.scaledPixelHeight}, scaledWidth = {cam.scaledPixelWidth}");
+        Debug.Log($"cam.orthographicSize = {cam.orthographicSize}");
+
+    }
+
     public void UnlockFields(MapField a_field)
     {
         int x = Mathf.RoundToInt(a_field.transform.position.x / m_widthOffset);
