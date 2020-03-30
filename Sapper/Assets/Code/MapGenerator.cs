@@ -94,7 +94,7 @@ public class MapGenerator : MonoBehaviour
                 }
 
                 minePercent += mineAmount;
-
+                field.m_map = this;
                 m_fields[i, j] = field;
             }
         }
@@ -175,10 +175,13 @@ public class MapGenerator : MonoBehaviour
 
         if (checkedField.IsEmpty)
         {
-            UnlockFieldsRecurs(a_x - 1, a_y);
-            UnlockFieldsRecurs(a_x + 1, a_y);
-            UnlockFieldsRecurs(a_x, a_y - 1);
-            UnlockFieldsRecurs(a_x, a_y + 1);
+            for ( int i = -1; i < 2; ++i )
+            {
+                for (int j = -1; j< 2;++j )
+                {
+                    UnlockFieldsRecurs(a_x +i, a_y+j);
+                }
+            }
         }
 
     }

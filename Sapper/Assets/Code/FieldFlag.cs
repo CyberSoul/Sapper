@@ -12,12 +12,17 @@ public class FieldFlag : MonoBehaviour
     [SerializeField] Sprite flagChecked;
     [SerializeField] Sprite flagUnchecked;
 
-    bool isChecked = false;
+    bool m_isChecked = false;
 
     public Sprite FlagView
     {
-        get { return isChecked ? flagChecked : flagUnchecked; }
+        get { return m_isChecked ? flagChecked : flagUnchecked; }
     }
+
+    public bool IsChecked
+    {
+        get { return m_isChecked; }
+}
 
     public void Action()
     {
@@ -39,7 +44,7 @@ public class FieldFlag : MonoBehaviour
     }
     public void Check()
     {
-        isChecked = true;
+        m_isChecked = true;
         m_renderer.sprite = flagChecked;
         m_renderer.enabled = true;
 

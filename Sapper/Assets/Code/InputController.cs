@@ -27,14 +27,15 @@ public class InputController : MonoBehaviour
         {
             if (Input.GetMouseButtonDown(0))
             {
-                Debug.Log("Mouse click");
+                //Debug.Log("Mouse click");
                 m_lastTouch = Input.mousePosition;
                 //m_isTouched = true;
                 m_touchTimeStamp = Time.unscaledTime;
             }
             else if (Input.GetMouseButtonUp(0))
             {
-                OnTouchEnd(m_lastTouch, false);
+                //OnTouchEnd(m_lastTouch, false);
+                OnTouchEnd(Input.mousePosition, false);
             }
 
             else if (Input.GetMouseButtonUp(1))
@@ -74,27 +75,33 @@ public class InputController : MonoBehaviour
 
     void OnTouchEnd( Vector2 touchPos, bool a_isALternative )
     {
+        var testPos = Camera.main.ScreenToWorldPoint(touchPos);
+        Debug.Log($"pos.x = {touchPos.x}, pos.y = {touchPos.y}, testPos.x = {testPos.x}, testPos.y = {testPos.y} ");
         //bool isLongTouch = (Time.unscaledTime - m_touchTimeStamp) > m_timeForLongTouch;
         RaycastHit2D hit2D = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(touchPos), Vector2.zero);
         if (hit2D)
         {
             MapField field = hit2D.transform.GetComponent<MapField>();
-            if (a_isALternative)
+            if (field)
             {
-                field.AlternativeAction();
-            }
-            else
-            {
-                if (field.Ellement.IsMine)
+                Debug.Log("Object found");
+                if (a_isALternative)
                 {
-                    field.Action();
-                    Debug.Log("You lose");
-                    //m_map.CreateMap();
-                    return;
+                    field.AlternativeAction();
                 }
                 else
                 {
-                    m_map.UnlockFields(field);
+                    if (field.Ellement.IsMine)
+                    {
+                        field.Action();
+                        Debug.Log("You lose");
+                        //m_map.CreateMap();
+                        return;
+                    }
+                    else
+                    {
+                        m_map.UnlockFields(field);
+                    }
                 }
             }
         }
