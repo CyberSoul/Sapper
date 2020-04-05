@@ -13,11 +13,15 @@ public struct MapConfig
 
 public class MapGenerator : MonoBehaviour
 {
+    float m_FieldOfView;
+
     [SerializeField] MapConfig m_initialData;
     [SerializeField] MapField m_fieldDark;
     [SerializeField] MapField m_fieldLight;
     [SerializeField] float m_widthOffset = 1.5f;
     [SerializeField] float m_heightOffset = 1.5f;
+
+    [SerializeField] CameraController m_camController;
 
     MapField[,] m_fields;
     
@@ -77,50 +81,57 @@ public class MapGenerator : MonoBehaviour
         int mineAmount = m_initialData.m_mineAmount;
         int minePercent = mineAmount;
 
-        int maxMineChance = m_initialData.m_width * m_initialData.m_height;
+        int fieldsAmount = m_initialData.m_width * m_initialData.m_height;
+
+        int[] minePositions = new int[mineAmount];
+        //TO_DO: change this generation at some day.
+        {
+            List<int> uniqueNumbers = new List<int>(fieldsAmount);
+            for (int i = 0; i < fieldsAmount; ++i)
+            {
+                uniqueNumbers.Add(i);
+            }
+
+            for (int i = 0; i < mineAmount; ++i)
+            {
+                int ranPos = UnityEngine.Random.Range(0, uniqueNumbers.Count);
+                minePositions[i] = uniqueNumbers[ranPos];
+                uniqueNumbers.RemoveAt(ranPos);
+            }
+        }
+
         for (int i = 0; i < m_initialData.m_width; ++i)
         {
             for (int j = 0; j < m_initialData.m_height; ++j)
             {
                 var field = Instantiate((i + j) % 2 == 0 ? m_fieldLight : m_fieldDark);
                 field.transform.position = new Vector3(i * m_widthOffset, j * m_heightOffset, 0);
-
-                int rand = UnityEngine.Random.Range(1, maxMineChance);
-                field.Ellement.IsMine = rand < minePercent;
-                if (rand < minePercent)
+                int minesAround = 0;
+                int currentPosIndex = i * m_initialData.m_width + j;
+                Predicate<int> searchPredicate = (value) => value == currentPosIndex;
+                if (Array.Exists(minePositions, searchPredicate))
                 {
-                    --mineAmount;
-                    minePercent = 0;
+                    field.Ellement.IsMine = true;
                 }
-
-                minePercent += mineAmount;
-                field.m_map = this;
-                m_fields[i, j] = field;
-            }
-        }
-
-        //Fill mines around
-        int minesAround = 0;
-        for (int i = 0; i < m_initialData.m_width; ++i)
-        {
-            for (int j = 0; j < m_initialData.m_height; ++j)
-            {
-                minesAround = 0;
-                if ( !m_fields[i, j].Ellement.IsMine )
+                else
                 {
-                    for (int iIndex = Math.Max(i -1, 0), iEnd = Math.Min(i+2, m_initialData.m_width); iIndex < iEnd; ++iIndex)
+                    minesAround = 0;
+                    for (int iIndex = Math.Max(i - 1, 0), iEnd = Math.Min(i + 2, m_initialData.m_width); iIndex < iEnd; ++iIndex)
                     {
-                        for (int jIndex = Math.Max(j -1, 0), jEnd = Math.Min(j+2, m_initialData.m_height); jIndex < jEnd; ++jIndex)
+                        for (int jIndex = Math.Max(j - 1, 0), jEnd = Math.Min(j + 2, m_initialData.m_height); jIndex < jEnd; ++jIndex)
                         {
-                            if (m_fields[iIndex, jIndex].Ellement.IsMine)
+                            currentPosIndex = iIndex * m_initialData.m_width + jIndex;
+                            searchPredicate = (value) => value == currentPosIndex;
+                            if (Array.Exists(minePositions, searchPredicate))
                             {
                                 ++minesAround;
                             }
                         }
                     }
-
-                    m_fields[i, j].Ellement.SetMineAround(minesAround);
+                    field.Ellement.SetMineAround(minesAround);
                 }
+                field.m_map = this;
+                m_fields[i, j] = field;
             }
         }
     }
@@ -131,6 +142,12 @@ public class MapGenerator : MonoBehaviour
         var pixelWidth = cam.pixelWidth;
         var pixelHeight = cam.pixelHeight;
 
+        m_camController.SetRequiredZoom(m_initialData.m_width* m_widthOffset, m_initialData.m_height*m_heightOffset);
+
+        m_camController.m_activeZoom = 1;
+
+        //cam.transform.position = new Vector3(pixelWidth/2, pixelHeight/2,-10);
+
         /*var pixlRect = cam.pixelRect;
         pixlRect.width /= 2;
         pixlRect.height /= 2;
@@ -139,10 +156,20 @@ public class MapGenerator : MonoBehaviour
         // cam.pixelRect = new Rect(0,0, m_widthOffset*m_initialData.m_width, m_heightOffset*m_initialData.m_height);
 
         cam.orthographicSize +=1;
+        cam.fieldOfView += 1;
 
         Debug.Log($"pixelHeight = {cam.pixelHeight}, pixelWidth = {cam.pixelWidth}, scaledHeight = {cam.scaledPixelHeight}, scaledWidth = {cam.scaledPixelWidth}");
         Debug.Log($"cam.orthographicSize = {cam.orthographicSize}");
 
+    }
+    void OnGUI()
+    {
+        //Set up the maximum and minimum values the Slider can return (you can change these)
+        float max, min;
+        max = 150.0f;
+        min = 20.0f;
+        //This Slider changes the field of view of the Camera between the minimum and maximum values
+        m_FieldOfView = GUI.HorizontalSlider(new Rect(20, 20, 100, 40), m_FieldOfView, min, max);
     }
 
     public void UnlockFields(MapField a_field)
