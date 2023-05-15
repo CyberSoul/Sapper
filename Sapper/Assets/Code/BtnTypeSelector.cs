@@ -5,18 +5,16 @@ public class BtnTypeSelector : MonoBehaviour
 {
     static int s_typesAmount = System.Enum.GetValues(typeof(ActionPress)).Length;
     [SerializeField] Sprite[] m_sprites = new Sprite[s_typesAmount];
+    [SerializeField] string[] m_texts = new string[s_typesAmount];
     [SerializeField] Image m_view;
+    [SerializeField] TMPro.TMP_Text m_text;
+
     // Start is called before the first frame update
     void Start()
     {
         ActionPress currentType = GameController.Instance.CurrentActionType;
         m_view.sprite = m_sprites[(int)currentType];
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        m_text.text = m_texts[(int)currentType];
     }
 
     public void ChangeType()
@@ -30,8 +28,10 @@ public class BtnTypeSelector : MonoBehaviour
         {
             ++newType;
         }
+
         GameController.Instance.CurrentActionType = newType;
         m_view.sprite = m_sprites[(int)newType];
+        m_text.text = m_texts[(int)newType];
     }
 
 }

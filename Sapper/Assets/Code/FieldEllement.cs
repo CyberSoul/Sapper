@@ -50,16 +50,4 @@ public class FieldEllement : MonoBehaviour
             m_spriteView.sprite = m_numbers[a_mineAmount-1]; // -1 because nu,bers start from 1.
         }
     }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

@@ -2,27 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-
-[Serializable]
-public struct MapConfig
-{
-    public int m_width;
-    public int m_height;
-    public int m_mineAmount;
-}
+using Cinemachine;
 
 public class MapGenerator : MonoBehaviour
 {
-    float m_FieldOfView;
-
-    [SerializeField] MapConfig m_initialData;
     [SerializeField] MapField m_fieldDark;
     [SerializeField] MapField m_fieldLight;
     [SerializeField] float m_widthOffset = 1.5f;
     [SerializeField] float m_heightOffset = 1.5f;
+    [SerializeField] Transform m_mapRoot;
+    [SerializeField] CinemachineTargetGroup m_targetGroup;
 
-    [SerializeField] CameraController m_camController;
-
+    //[SerializeField] CameraController m_camController;
+    [SerializeField]
+    MapConfig m_initialData;
     MapField[,] m_fields;
     
     public float WidthOffset
@@ -34,20 +27,45 @@ public class MapGenerator : MonoBehaviour
         get { return m_heightOffset; }
     }
 
-    public Vector2 FieldSize
+    public Vector2Int FieldSize
     {
-        get { return new Vector2(m_initialData.m_width, m_initialData.m_height); }
+        get { return new Vector2Int(m_initialData.m_width, m_initialData.m_height); }
     }
 
     // Start is called before the first frame update
     void Start()
     {
+        if (MapConfigController.Instance != null)
+        {
+            m_initialData = MapConfigController.Instance.m_currentConfig;
+        }
+
         CreateMap();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void AddCornerToTargetGroup()
     {
+        if (m_targetGroup != null)
+        {
+            CinemachineTargetGroup.Target[] corners = new CinemachineTargetGroup.Target[4];
+            int i = 0;
+            Vector2Int fieldSize = FieldSize;
+            corners[i++] = CinTargetFromFiled(0,0);
+            corners[i++] = CinTargetFromFiled(fieldSize.x - 1, 0);
+            corners[i++] = CinTargetFromFiled(0, fieldSize.y - 1);
+            corners[i++] = CinTargetFromFiled(fieldSize.x - 1, fieldSize.y - 1);
+
+            m_targetGroup.m_Targets = corners;
+        }
+    }
+
+    private CinemachineTargetGroup.Target CinTargetFromFiled(int x, int y)
+    {
+        CinemachineTargetGroup.Target cinTarget = new CinemachineTargetGroup.Target();
+        cinTarget.target = m_fields[x, y].transform;
+        cinTarget.weight = 2;
+        cinTarget.radius = 1.28f/2f;
+        return cinTarget;
     }
 
     public void CreateMap(MapConfig a_mapConfig)
@@ -104,7 +122,7 @@ public class MapGenerator : MonoBehaviour
         {
             for (int j = 0; j < m_initialData.m_height; ++j)
             {
-                var field = Instantiate((i + j) % 2 == 0 ? m_fieldLight : m_fieldDark);
+                var field = Instantiate((i + j) % 2 == 0 ? m_fieldLight : m_fieldDark, m_mapRoot);
                 field.transform.position = new Vector3(i * m_widthOffset, j * m_heightOffset, 0);
                 int minesAround = 0;
                 int currentPosIndex = i * m_initialData.m_width + j;
@@ -134,42 +152,8 @@ public class MapGenerator : MonoBehaviour
                 m_fields[i, j] = field;
             }
         }
-    }
 
-    public void PositionateCamera()
-    {
-        Camera cam = Camera.main;
-        var pixelWidth = cam.pixelWidth;
-        var pixelHeight = cam.pixelHeight;
-
-        m_camController.SetRequiredZoom(m_initialData.m_width* m_widthOffset, m_initialData.m_height*m_heightOffset);
-
-        m_camController.m_activeZoom = 1;
-
-        //cam.transform.position = new Vector3(pixelWidth/2, pixelHeight/2,-10);
-
-        /*var pixlRect = cam.pixelRect;
-        pixlRect.width /= 2;
-        pixlRect.height /= 2;
-        cam.pixelRect = pixlRect;*/
-
-        // cam.pixelRect = new Rect(0,0, m_widthOffset*m_initialData.m_width, m_heightOffset*m_initialData.m_height);
-
-        cam.orthographicSize +=1;
-        cam.fieldOfView += 1;
-
-        Debug.Log($"pixelHeight = {cam.pixelHeight}, pixelWidth = {cam.pixelWidth}, scaledHeight = {cam.scaledPixelHeight}, scaledWidth = {cam.scaledPixelWidth}");
-        Debug.Log($"cam.orthographicSize = {cam.orthographicSize}");
-
-    }
-    void OnGUI()
-    {
-        //Set up the maximum and minimum values the Slider can return (you can change these)
-        float max, min;
-        max = 150.0f;
-        min = 20.0f;
-        //This Slider changes the field of view of the Camera between the minimum and maximum values
-        m_FieldOfView = GUI.HorizontalSlider(new Rect(20, 20, 100, 40), m_FieldOfView, min, max);
+        AddCornerToTargetGroup();
     }
 
     public void UnlockFields(MapField a_field)
@@ -178,6 +162,10 @@ public class MapGenerator : MonoBehaviour
         int y = Mathf.RoundToInt(a_field.transform.position.y / m_heightOffset);
 
         UnlockFields(x, y);
+        if (CheckForMinesEnd())
+        {
+            EventDispatcher.TriggerGameEnd(true);
+        }
     }
 
     public void UnlockFields( int a_startedX, int a_startedY )
@@ -211,5 +199,21 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
+    }
+
+    bool CheckForMinesEnd()
+    {
+        for (int i = 0; i < m_initialData.m_width; ++i)
+        {
+            for (int j = 0; j < m_initialData.m_height; ++j)
+            {
+                if (!m_fields[i, j].IsOpen && !m_fields[i, j].Ellement.IsMine )
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }

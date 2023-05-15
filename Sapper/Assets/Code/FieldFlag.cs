@@ -34,12 +34,13 @@ public class FieldFlag : MonoBehaviour
         m_renderer.enabled = false;
     }
 
-    public void AlternativeAction()
+    public bool AlternativeAction()
     {
         //if (!isChecked)
         {
             m_renderer.sprite = flagUnchecked;
             m_renderer.enabled = !m_renderer.enabled;
+            return m_renderer.enabled;
         }
     }
     public void Check()
